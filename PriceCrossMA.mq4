@@ -19,13 +19,13 @@ extern string
          Expert_Name       = "---------- Price Cross MA v0.3";
 extern double 
          StopLoss          = 300,
-         TakeProfit        = 250,
-         TrailingStop      = 250;
+         TakeProfit        = 600,
+         TrailingStop      = 0;
 
 extern string  
          MA_Setting        = "---------- Moving Average Setting";
 extern int
-         MAPeriod          = 120,
+         MAPeriod          = 180,
          MAMethod          = 0,   //0:SMA 1:EMA 2:SMMA 3:LWMA
          MAPrice           = 0;   //0:CLOSE 1:OPEN
          
@@ -35,7 +35,7 @@ extern int
          NumberOfTries     = 5,
          Slippage          = 5;
 extern bool
-         StopAndReverse    = false; //true;  // if signal change, exit and reverse order
+         StopAndReverse    = true;  // if signal change, exit and reverse order
 
 extern string  
          Time_Parameters   = "---------- EA Active Time";
@@ -50,7 +50,7 @@ extern string
 extern double 
          Lots              = 1;
 extern bool 
-         MM                = true, //Use Money Management or not
+         MM                = false, //Use Money Management or not
          AccountIsMicro    = false; //Use Micro-Account or not
 extern int 
          Risk              = 10; //10%
@@ -154,7 +154,6 @@ int start()
          OpenPriceCurrent >MAValueCurrent)
       {
          ticket = subOpenOrder(OP_BUY); // open BUY order
-         subCheckError(ticket,"BUY");
          return(0);
       }
 
@@ -163,7 +162,6 @@ int start()
          OpenPriceCurrent <MAValueCurrent)
       {
          ticket = subOpenOrder(OP_SELL); // open SELL order
-         subCheckError(ticket,"SELL");
          return(0);
       }
       return(0);
@@ -194,7 +192,6 @@ int start()
                   {
                      OrderClose(OrderTicket(),OrderLots(),Bid,Slippage,Violet); // close buy order
                      ticket = subOpenOrder(OP_SELL); // open sell order
-                     subCheckError(ticket,"SELL");
                      return(0);
                   }
                }
@@ -217,7 +214,6 @@ int start()
                   {
                      OrderClose(OrderTicket(),OrderLots(),Ask,Slippage,Violet); // close sell order
                      ticket = subOpenOrder(OP_BUY); // open buy order
-                     subCheckError(ticket,"BUY");
                      return(0);
                   }
                }
@@ -330,6 +326,7 @@ int subOpenOrder(int type)
             }
             else //normal error
             {
+               Print("Open Order error: ",err," lots=",Lots);
                break;
             }  
          }
@@ -354,6 +351,7 @@ int subOpenOrder(int type)
             }
             else //normal error
             {
+               Print("Open Order error: ",err," lots=",Lots);
                break;
             }  
          }
@@ -361,17 +359,5 @@ int subOpenOrder(int type)
    }  
    return(ticket);
 }
-
-//----------------------- CHECK ERROR CODE FUNCTION
-//----------------------- SOURCE : CODERSGURU
-void subCheckError(int ticket, string Type)
-{
-    if(ticket>0)
-    {
-      if(OrderSelect(ticket,SELECT_BY_TICKET,MODE_TRADES)) Print(Type + " order opened : ",OrderOpenPrice());
-    }   
-    else Print("Error opening " + Type + " order : ", ErrorDescription(GetLastError()));
-}
-
 
 //----------------------- END FUNCTION
