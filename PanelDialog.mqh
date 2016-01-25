@@ -16,6 +16,7 @@
 extern int   Lots = 1;
 extern int   EnableInd = 1;
 extern int   EnableKReverse = 0;
+extern int   EnableDayClose = 0;
 int     KTradeMode = -1;
 int     TradeDirection = 0;
 bool    Immediate = false;
@@ -51,6 +52,7 @@ private:
    CButton           m_button1;                       // the button object
    CButton           m_button2;                       // the button object
    CButton           m_button3;                       // the fixed button object
+   CButton           m_button4;
    CListView         m_list_view;                     // the list object
    CRadioGroup       m_radio_group;                   // the radio buttons group object
    CRadioGroup       m_radio_group2;                   // the radio buttons group object
@@ -72,6 +74,7 @@ protected:
    bool              CreateButton1(void);
    bool              CreateButton2(void);
    bool              CreateButton3(void);
+   bool              CreateButton4(void);
    bool              CreateRadioGroup(void);
    bool              CreateRadioGroup2(void);
    bool              CreateCheckGroup(void);
@@ -82,6 +85,7 @@ protected:
    void              OnClickButton1(void);
    void              OnClickButton2(void);
    void              OnClickButton3(void);
+   void              OnClickButton4(void);
    void              OnChangeRadioGroup(void);
    void              OnChangeRadioGroup2(void);
    void              OnChangeCheckGroup(void);
@@ -98,6 +102,7 @@ EVENT_MAP_BEGIN(CPanelDialog)
 ON_EVENT(ON_CLICK,m_button1,OnClickButton1)
 ON_EVENT(ON_CLICK,m_button2,OnClickButton2)
 ON_EVENT(ON_CLICK,m_button3,OnClickButton3)
+ON_EVENT(ON_CLICK,m_button4,OnClickButton4)
 ON_EVENT(ON_CHANGE,m_radio_group,OnChangeRadioGroup)
 ON_EVENT(ON_CHANGE,m_radio_group2,OnChangeRadioGroup2)
 ON_EVENT(ON_CHANGE,m_check_group,OnChangeCheckGroup)
@@ -133,6 +138,8 @@ bool CPanelDialog::Create(const long chart,const string name,const int subwin,co
    if(!CreateButton2())
       return(false);
    if(!CreateButton3())
+      return(false);
+   if(!CreateButton4())
       return(false);
    if(!CreateRadioGroup())
       return(false);
@@ -257,6 +264,27 @@ bool CPanelDialog::CreateButton3(void)
    return(true);
   }
 //+------------------------------------------------------------------+
+//| Create the "Button4" fixed button                                |
+//+------------------------------------------------------------------+
+bool CPanelDialog::CreateButton4(void)
+  {
+//--- coordinates
+   int x1=ClientAreaWidth()-(INDENT_RIGHT+BUTTON_WIDTH);
+   int y1=INDENT_TOP+2*BUTTON_HEIGHT+2*CONTROLS_GAP_Y;
+   int x2=x1+BUTTON_WIDTH;
+   int y2=y1+BUTTON_HEIGHT;
+//--- create
+   if(!m_button4.Create(m_chart_id,m_name+"Button4",m_subwin,x1,y1,x2,y2))
+      return(false);
+   if(!m_button4.Text("Print Log"))
+      return(false);
+   if(!Add(m_button4))
+      return(false);
+   m_button4.Alignment(WND_ALIGN_RIGHT|WND_ALIGN_BOTTOM,0,0,INDENT_RIGHT,INDENT_BOTTOM);
+//--- succeed
+   return(true);
+  }  
+//+------------------------------------------------------------------+
 //| Create the "RadioGroup" element                                  |
 //+------------------------------------------------------------------+
 bool CPanelDialog::CreateRadioGroup(void)
@@ -328,8 +356,11 @@ bool CPanelDialog::CreateCheckGroup(void)
          return(false);
    if(!m_check_group.AddItem("Enable KReverse",0))
          return(false);
+   if(!m_check_group.AddItem("Enable DayClose",0))
+         return(false);
    if( EnableInd == 1) m_check_group.Check(0, 1);
-   if( EnableKReverse == 1) m_check_group.Check(0, 1);
+   if( EnableKReverse == 1) m_check_group.Check(1, 1);
+   if( EnableDayClose == 1) m_check_group.Check(2, 1);
 
 //--- succeed
    return(true);
@@ -417,6 +448,16 @@ void CPanelDialog::OnClickButton3(void)
 //+------------------------------------------------------------------+
 //| Event handler                                                    |
 //+------------------------------------------------------------------+
+void CPanelDialog::OnClickButton4(void)
+  {
+   m_edit.Text("Button [Print Log] clicked.");
+   msg = "Get new instruction: Print Log.";
+   m_label.Text(msg);
+   command = 0;
+  }  
+//+------------------------------------------------------------------+
+//| Event handler                                                    |
+//+------------------------------------------------------------------+
 void CPanelDialog::OnChangeListView(void)
   {
    Lots = m_list_view.Value();
@@ -462,6 +503,12 @@ void CPanelDialog::OnChangeCheckGroup(void)
    {
       EnableKReverse = newvalue;
       m_edit.Text("EnableKReverse set to "+EnableKReverse);
+   }
+   newvalue = m_check_group.Check(2);
+   if( EnableDayClose != newvalue) 
+   {
+      EnableDayClose = newvalue;
+      m_edit.Text("EnableDayClose set to "+EnableDayClose);
    }
   }
 //+------------------------------------------------------------------+
