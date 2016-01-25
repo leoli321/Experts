@@ -13,8 +13,9 @@
 #include <Controls\CheckGroup.mqh>
 #include <Controls\Label.mqh>
 
-extern int    Lots = 1;
-
+extern int   Lots = 1;
+extern int   EnableInd = 1;
+extern int   EnableKReverse = 0;
 int     KTradeMode = -1;
 int     TradeDirection = 0;
 bool    Immediate = false;
@@ -38,6 +39,7 @@ string KTradeModeStr[3] = {"No","Buy","Sell"};
 #define BUTTON_HEIGHT                       (20)      // size by Y coordinate
 //--- for the indication area
 #define EDIT_HEIGHT                         (20)      // size by Y coordinate
+#define RADIO_HEIGHT                        (45)       
 //+------------------------------------------------------------------+
 //| Class CPanelDialog                                               |
 //| Usage: main dialog of the SimplePanel application                |
@@ -136,8 +138,8 @@ bool CPanelDialog::Create(const long chart,const string name,const int subwin,co
       return(false);
    if(!CreateRadioGroup2())
       return(false);
-   //if(!CreateCheckGroup())
-   //   return(false);
+   if(!CreateCheckGroup())
+      return(false);
    if(!CreateListView())
       return(false);
 //--- succeed
@@ -275,7 +277,7 @@ bool CPanelDialog::CreateRadioGroup(void)
    for(int i=0;i<3;i++)
       if(!m_radio_group.AddItem("KTradeMode:"+KTradeModeStr[i],i-1))
          return(false);
-   m_radio_group.Select(KTradeMode+1);
+   m_radio_group.Value(KTradeMode);
 //--- succeed
    return(true);
   }
@@ -289,7 +291,7 @@ bool CPanelDialog::CreateRadioGroup2(void)
    int x1=INDENT_LEFT+sx+CONTROLS_GAP_X;
    int y1=INDENT_TOP+EDIT_HEIGHT*2+CONTROLS_GAP_Y;
    int x2=x1+sx;
-   int y2=ClientAreaHeight()-INDENT_BOTTOM;
+   int y2=y1 + RADIO_HEIGHT; //ClientAreaHeight()-INDENT_BOTTOM;
 //--- create
    if(!m_radio_group2.Create(m_chart_id,m_name+"RadioGroup2",m_subwin,x1,y1,x2,y2))
       return(false);
@@ -300,7 +302,7 @@ bool CPanelDialog::CreateRadioGroup2(void)
    for(int i=0;i<2;i++)
       if(!m_radio_group2.AddItem("Trade as:"+KTradeModeStr[i+1],i))
          return(false);
-   m_radio_group2.Select(TradeDirection);
+   m_radio_group2.Value(TradeDirection);
 //--- succeed
    return(true);
   }
@@ -312,7 +314,7 @@ bool CPanelDialog::CreateCheckGroup(void)
    int sx=(ClientAreaWidth()-(INDENT_LEFT+INDENT_RIGHT+BUTTON_WIDTH))/3-CONTROLS_GAP_X;
 //--- coordinates
    int x1=INDENT_LEFT+sx+CONTROLS_GAP_X;
-   int y1=INDENT_TOP+EDIT_HEIGHT*2+CONTROLS_GAP_Y;
+   int y1=INDENT_TOP+EDIT_HEIGHT*2+CONTROLS_GAP_Y+RADIO_HEIGHT+CONTROLS_GAP_Y;
    int x2=x1+sx;
    int y2=ClientAreaHeight()-INDENT_BOTTOM;
 //--- create
@@ -322,9 +324,13 @@ bool CPanelDialog::CreateCheckGroup(void)
       return(false);
    m_check_group.Alignment(WND_ALIGN_HEIGHT,0,y1,0,INDENT_BOTTOM);
 //--- fill out with strings
-   for(int i=0;i<4;i++)
-      if(!m_check_group.AddItem("Item "+IntegerToString(i),1<<i))
+   if(!m_check_group.AddItem("Enable Indicators",0))
          return(false);
+   if(!m_check_group.AddItem("Enable KReverse",0))
+         return(false);
+   if( EnableInd == 1) m_check_group.Check(0, 1);
+   if( EnableKReverse == 1) m_check_group.Check(0, 1);
+
 //--- succeed
    return(true);
   }
@@ -435,8 +441,8 @@ void CPanelDialog::OnChangeRadioGroup2(void)
 void CPanelDialog::UpdateKTradeMode(void)
   {
    KTradeModeTime = 0;
-   m_radio_group.Select(KTradeMode+1);
-   m_radio_group.Redraw();
+   m_radio_group.Value(KTradeMode);
+   //m_radio_group.Redraw();
    m_edit.Text("KTradeMode="+IntegerToString(m_radio_group.Value()));
    m_label.Text(msg);
   }  
@@ -445,7 +451,18 @@ void CPanelDialog::UpdateKTradeMode(void)
 //+------------------------------------------------------------------+
 void CPanelDialog::OnChangeCheckGroup(void)
   {
-   m_edit.Text(__FUNCTION__+" : Value="+IntegerToString(m_check_group.Value()));
+   int newvalue = m_check_group.Check(0);
+   if( EnableInd != newvalue) 
+   {
+      EnableInd = newvalue;
+      m_edit.Text("Enable Indicators set to "+EnableInd);
+   }
+   newvalue = m_check_group.Check(1);
+   if( EnableKReverse != newvalue) 
+   {
+      EnableKReverse = newvalue;
+      m_edit.Text("EnableKReverse set to "+EnableKReverse);
+   }
   }
 //+------------------------------------------------------------------+
 //| Rest events handler                                                    |
