@@ -13,7 +13,7 @@
 #include <Controls\CheckGroup.mqh>
 #include <Controls\Label.mqh>
 
-extern int   Lots = 1;
+extern int   Lots = 2;
 extern int   EnableInd = 1;
 extern int   EnableKReverse = 0;
 extern int   EnableDayClose = 0;
@@ -383,7 +383,7 @@ bool CPanelDialog::CreateListView(void)
       return(false);
    m_list_view.Alignment(WND_ALIGN_HEIGHT,0,y1,0,INDENT_BOTTOM);
 //--- fill out with strings
-   for(int i=1;i<=6;i++)
+   for(int i=2;i<=6;i++)
       if(!m_list_view.ItemAdd("Lots="+IntegerToString(i), i))
          return(false);
    m_list_view.SelectByValue(Lots);
