@@ -32,7 +32,7 @@ string KTradeModeStr[3] = {"No","Buy","Sell"};
 #define INDENT_LEFT                         (11)      // indent from left (with allowance for border width)
 #define INDENT_TOP                          (11)      // indent from top (with allowance for border width)
 #define INDENT_RIGHT                        (11)      // indent from right (with allowance for border width)
-#define INDENT_BOTTOM                       (11)      // indent from bottom (with allowance for border width)
+#define INDENT_BOTTOM                       (41)      // indent from bottom (with allowance for border width)
 #define CONTROLS_GAP_X                      (10)      // gap by X coordinate
 #define CONTROLS_GAP_Y                      (10)      // gap by Y coordinate
 //--- for buttons
@@ -49,16 +49,19 @@ class CPanelDialog : public CAppDialog
   {
 private:
    CEdit             m_edit;                          // the display field object
+   CEdit             m_edit_price;                  
+   CEdit             m_edit_takeprofit;
    CButton           m_button1;                       // the button object
    CButton           m_button2;                       // the button object
    CButton           m_button3;                       // the fixed button object
    CButton           m_button4;
+   CButton           m_button5;
    CListView         m_list_view;                     // the list object
    CRadioGroup       m_radio_group;                   // the radio buttons group object
    CRadioGroup       m_radio_group2;                   // the radio buttons group object
    CCheckGroup       m_check_group;                   // the check box group object
    CLabel            m_label;
-
+   CLabel            m_label2;
 public:
                      CPanelDialog(void);
                     ~CPanelDialog(void);
@@ -86,6 +89,7 @@ protected:
    void              OnClickButton2(void);
    void              OnClickButton3(void);
    void              OnClickButton4(void);
+   void              OnClickButton5(void);
    void              OnChangeRadioGroup(void);
    void              OnChangeRadioGroup2(void);
    void              OnChangeCheckGroup(void);
@@ -94,6 +98,8 @@ protected:
 public:
    void              UpdateKTradeMode();  
    void              UpdateLabel(string msg); 
+   double            GetOpenPrice();
+   double            GetTakeProfit();
   };
 //+------------------------------------------------------------------+
 //| Event Handling                                                   |
@@ -103,6 +109,7 @@ ON_EVENT(ON_CLICK,m_button1,OnClickButton1)
 ON_EVENT(ON_CLICK,m_button2,OnClickButton2)
 ON_EVENT(ON_CLICK,m_button3,OnClickButton3)
 ON_EVENT(ON_CLICK,m_button4,OnClickButton4)
+ON_EVENT(ON_CLICK,m_button5,OnClickButton5)
 ON_EVENT(ON_CHANGE,m_radio_group,OnChangeRadioGroup)
 ON_EVENT(ON_CHANGE,m_radio_group2,OnChangeRadioGroup2)
 ON_EVENT(ON_CHANGE,m_check_group,OnChangeCheckGroup)
@@ -170,6 +177,14 @@ bool CPanelDialog::CreateLabel(void)
    m_label.Alignment(WND_ALIGN_WIDTH,INDENT_LEFT,0,INDENT_RIGHT+BUTTON_WIDTH+CONTROLS_GAP_X,0);
    m_label.Text("Semi-auto trade system started.");
 //--- succeed
+   x2 = x1 + BUTTON_WIDTH;
+   y1=ClientAreaHeight()-(INDENT_BOTTOM) + CONTROLS_GAP_Y;
+   y2=y1+EDIT_HEIGHT;
+   if(!m_label2.Create(m_chart_id,m_name+"Label2",m_subwin,x1,y1,x2,y2))
+      return(false);
+   if(!Add(m_label2))
+      return(false);
+   m_label2.Text("OpenPrice / TakeProfit :");
    return(true);
   } 
   
@@ -196,6 +211,29 @@ bool CPanelDialog::CreateEdit(void)
    if(!Add(m_edit))
       return(false);
    m_edit.Alignment(WND_ALIGN_WIDTH,INDENT_LEFT,0,INDENT_RIGHT+BUTTON_WIDTH+CONTROLS_GAP_X,0);
+//--- succeed
+//--- coordinates
+   int sx=(ClientAreaWidth()-(INDENT_LEFT+INDENT_RIGHT+BUTTON_WIDTH))/3-CONTROLS_GAP_X;
+//--- coordinates
+   x1=INDENT_LEFT+sx+CONTROLS_GAP_X;
+   x2=x1+sx;
+   y1=ClientAreaHeight()-(INDENT_BOTTOM) + CONTROLS_GAP_Y;
+   y2=y1+EDIT_HEIGHT;
+//--- create
+   if(!m_edit_price.Create(m_chart_id,m_name+"EditPrice",m_subwin,x1,y1,x2,y2))
+      return(false);
+   if(!Add(m_edit_price))
+      return(false);
+//--- coordinates
+   sx=(ClientAreaWidth()-(INDENT_LEFT+INDENT_RIGHT+BUTTON_WIDTH))/3-CONTROLS_GAP_X;
+//--- coordinates
+   x1=ClientAreaWidth()-(sx+INDENT_RIGHT+BUTTON_WIDTH+CONTROLS_GAP_X);
+   x2=x1+sx;
+//--- create
+   if(!m_edit_takeprofit.Create(m_chart_id,m_name+"EditTakeProfit",m_subwin,x1,y1,x2,y2))
+      return(false);
+   if(!Add(m_edit_takeprofit))
+      return(false);
 //--- succeed
    return(true);
   }
@@ -281,6 +319,18 @@ bool CPanelDialog::CreateButton4(void)
    if(!Add(m_button4))
       return(false);
    m_button4.Alignment(WND_ALIGN_RIGHT|WND_ALIGN_BOTTOM,0,0,INDENT_RIGHT,INDENT_BOTTOM);
+//--- succeed
+//--- coordinates
+   y1=ClientAreaHeight()-(INDENT_BOTTOM) + CONTROLS_GAP_Y;
+   y2=y1+BUTTON_HEIGHT;
+//--- create
+   if(!m_button5.Create(m_chart_id,m_name+"Button5",m_subwin,x1,y1,x2,y2))
+      return(false);
+   if(!m_button5.Text("Add Grid"))
+      return(false);
+   if(!Add(m_button5))
+      return(false);
+   m_button5.Alignment(WND_ALIGN_RIGHT|WND_ALIGN_BOTTOM,0,0,INDENT_RIGHT,INDENT_BOTTOM);
 //--- succeed
    return(true);
   }  
@@ -455,6 +505,13 @@ void CPanelDialog::OnClickButton4(void)
    m_label.Text(msg);
    command = 0;
   }  
+void CPanelDialog::OnClickButton5(void)
+  {
+   m_edit.Text("Button [Add Grid] clicked.");
+   msg = "Get new instruction: Add Grid.";
+   m_label.Text(msg);
+   command = 3;
+  } 
 //+------------------------------------------------------------------+
 //| Event handler                                                    |
 //+------------------------------------------------------------------+
@@ -510,6 +567,16 @@ void CPanelDialog::OnChangeCheckGroup(void)
       EnableDayClose = newvalue;
       m_edit.Text("EnableDayClose set to "+EnableDayClose);
    }
+  }
+ double CPanelDialog::GetOpenPrice(void)
+  {
+      string s = m_edit_price.Text();  
+      return(StringToDouble(s));
+  }
+  double CPanelDialog::GetTakeProfit(void)
+  {
+      string s = m_edit_takeprofit.Text();  
+      return(StringToDouble(s));
   }
 //+------------------------------------------------------------------+
 //| Rest events handler                                                    |
