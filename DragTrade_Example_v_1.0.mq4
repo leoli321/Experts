@@ -1,10 +1,10 @@
 //+------------------------------------------------------------------+
 //|                                      DragTrade_Example_v_1.0.mq4 |
 //+------------------------------------------------------------------+
-#property copyright "Copyright © 2009, TheXpert"
+#property copyright "Copyright ?2009, TheXpert"
 #property link      "theforexpert@gmail.com"
 
-extern int      Magic          = 1111;
+extern int      Magic          = -1;
 extern int      EAMagic        = 1234;
 extern int      TimesToRepeat  = 3;
 extern int      Slippage       = 3;
@@ -16,6 +16,7 @@ bool Testing;
 int init()
 {
    Testing = IsTesting();
+
    DragTrade_Init(Magic, EAMagic, TimesToRepeat, Slippage, "Drag Trade Example");
 
    Comment_("Test Example of using Drag Trade Library");
