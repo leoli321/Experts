@@ -13,8 +13,8 @@
 #include <Controls\CheckGroup.mqh>
 #include <Controls\Label.mqh>
 
-extern int   Lots = 2;
-extern int   EnableInd = 1;
+extern int   Lots = 1;
+extern int   EnableInd = 0;
 extern int   EnableKReverse = 0;
 extern int   EnableDayClose = 0;
 int     KTradeMode = -1;
@@ -36,7 +36,7 @@ string KTradeModeStr[3] = {"No","Buy","Sell"};
 #define CONTROLS_GAP_X                      (10)      // gap by X coordinate
 #define CONTROLS_GAP_Y                      (10)      // gap by Y coordinate
 //--- for buttons
-#define BUTTON_WIDTH                        (100)     // size by X coordinate
+#define BUTTON_WIDTH                        (120)     // size by X coordinate
 #define BUTTON_HEIGHT                       (20)      // size by Y coordinate
 //--- for the indication area
 #define EDIT_HEIGHT                         (20)      // size by Y coordinate
@@ -56,12 +56,14 @@ private:
    CButton           m_button3;                       // the fixed button object
    CButton           m_button4;
    CButton           m_button5;
+   CButton           m_button6;
    CListView         m_list_view;                     // the list object
    CRadioGroup       m_radio_group;                   // the radio buttons group object
    CRadioGroup       m_radio_group2;                   // the radio buttons group object
    CCheckGroup       m_check_group;                   // the check box group object
    CLabel            m_label;
    CLabel            m_label2;
+   CLabel            m_label3;
 public:
                      CPanelDialog(void);
                     ~CPanelDialog(void);
@@ -90,6 +92,7 @@ protected:
    void              OnClickButton3(void);
    void              OnClickButton4(void);
    void              OnClickButton5(void);
+   void              OnClickButton6(void);
    void              OnChangeRadioGroup(void);
    void              OnChangeRadioGroup2(void);
    void              OnChangeCheckGroup(void);
@@ -110,6 +113,7 @@ ON_EVENT(ON_CLICK,m_button2,OnClickButton2)
 ON_EVENT(ON_CLICK,m_button3,OnClickButton3)
 ON_EVENT(ON_CLICK,m_button4,OnClickButton4)
 ON_EVENT(ON_CLICK,m_button5,OnClickButton5)
+ON_EVENT(ON_CLICK,m_button6,OnClickButton6)
 ON_EVENT(ON_CHANGE,m_radio_group,OnChangeRadioGroup)
 ON_EVENT(ON_CHANGE,m_radio_group2,OnChangeRadioGroup2)
 ON_EVENT(ON_CHANGE,m_check_group,OnChangeCheckGroup)
@@ -178,14 +182,21 @@ bool CPanelDialog::CreateLabel(void)
    m_label.Text("Semi-auto trade system started.");
 //--- succeed
    x2 = x1 + BUTTON_WIDTH;
-   y1=ClientAreaHeight()-(INDENT_BOTTOM) + CONTROLS_GAP_Y;
+   y1=ClientAreaHeight()-2*(INDENT_BOTTOM) + CONTROLS_GAP_Y;
    y2=y1+EDIT_HEIGHT;
    if(!m_label2.Create(m_chart_id,m_name+"Label2",m_subwin,x1,y1,x2,y2))
       return(false);
    if(!Add(m_label2))
       return(false);
    m_label2.Text("OpenPrice / TakeProfit :");
-   return(true);
+
+   y1=ClientAreaHeight()-(INDENT_BOTTOM) + CONTROLS_GAP_Y;
+   y2=y1+EDIT_HEIGHT;
+   if(!m_label3.Create(m_chart_id,m_name+"Label3",m_subwin,x1,y1,x2,y2))
+      return(false);
+   if(!Add(m_label3))
+      return(false);
+   m_label3.Text("Information:");   return(true);
   } 
   
 void CPanelDialog::UpdateLabel(string newmsg)
@@ -217,7 +228,7 @@ bool CPanelDialog::CreateEdit(void)
 //--- coordinates
    x1=INDENT_LEFT+sx+CONTROLS_GAP_X;
    x2=x1+sx;
-   y1=ClientAreaHeight()-(INDENT_BOTTOM) + CONTROLS_GAP_Y;
+   y1=ClientAreaHeight()-2*(INDENT_BOTTOM) + CONTROLS_GAP_Y;
    y2=y1+EDIT_HEIGHT;
 //--- create
    if(!m_edit_price.Create(m_chart_id,m_name+"EditPrice",m_subwin,x1,y1,x2,y2))
@@ -332,6 +343,18 @@ bool CPanelDialog::CreateButton4(void)
       return(false);
    m_button5.Alignment(WND_ALIGN_RIGHT|WND_ALIGN_BOTTOM,0,0,INDENT_RIGHT,INDENT_BOTTOM);
 //--- succeed
+//--- coordinates
+   y1=INDENT_TOP+3*BUTTON_HEIGHT+3*CONTROLS_GAP_Y;
+   y2=y1+BUTTON_HEIGHT;
+//--- create
+   if(!m_button6.Create(m_chart_id,m_name+"Button6",m_subwin,x1,y1,x2,y2))
+      return(false);
+   if(!m_button6.Text("Reverse Order"))
+      return(false);
+   if(!Add(m_button6))
+      return(false);
+   m_button6.Alignment(WND_ALIGN_RIGHT|WND_ALIGN_BOTTOM,0,0,INDENT_RIGHT,INDENT_BOTTOM);
+//--- succeed
    return(true);
   }  
 //+------------------------------------------------------------------+
@@ -344,7 +367,7 @@ bool CPanelDialog::CreateRadioGroup(void)
    int x1=INDENT_LEFT;
    int y1=INDENT_TOP+EDIT_HEIGHT*2+CONTROLS_GAP_Y;
    int x2=x1+sx;
-   int y2=ClientAreaHeight()-INDENT_BOTTOM;
+   int y2=ClientAreaHeight()-2*INDENT_BOTTOM;
 //--- create
    if(!m_radio_group.Create(m_chart_id,m_name+"RadioGroup",m_subwin,x1,y1,x2,y2))
       return(false);
@@ -369,7 +392,7 @@ bool CPanelDialog::CreateRadioGroup2(void)
    int x1=INDENT_LEFT+sx+CONTROLS_GAP_X;
    int y1=INDENT_TOP+EDIT_HEIGHT*2+CONTROLS_GAP_Y;
    int x2=x1+sx;
-   int y2=y1 + RADIO_HEIGHT; //ClientAreaHeight()-INDENT_BOTTOM;
+   int y2=ClientAreaHeight()-2*INDENT_BOTTOM;
 //--- create
    if(!m_radio_group2.Create(m_chart_id,m_name+"RadioGroup2",m_subwin,x1,y1,x2,y2))
       return(false);
@@ -394,7 +417,7 @@ bool CPanelDialog::CreateCheckGroup(void)
    int x1=INDENT_LEFT+sx+CONTROLS_GAP_X;
    int y1=INDENT_TOP+EDIT_HEIGHT*2+CONTROLS_GAP_Y+RADIO_HEIGHT+CONTROLS_GAP_Y;
    int x2=x1+sx;
-   int y2=ClientAreaHeight()-INDENT_BOTTOM;
+   int y2=ClientAreaHeight()-2*INDENT_BOTTOM;
 //--- create
    if(!m_check_group.Create(m_chart_id,m_name+"CheckGroup",m_subwin,x1,y1,x2,y2))
       return(false);
@@ -425,7 +448,7 @@ bool CPanelDialog::CreateListView(void)
    int x1=ClientAreaWidth()-(sx+INDENT_RIGHT+BUTTON_WIDTH+CONTROLS_GAP_X);
    int y1=INDENT_TOP+EDIT_HEIGHT*2+CONTROLS_GAP_Y;
    int x2=x1+sx;
-   int y2=ClientAreaHeight()-INDENT_BOTTOM;
+   int y2=ClientAreaHeight()-2*INDENT_BOTTOM;
 //--- create
    if(!m_list_view.Create(m_chart_id,m_name+"ListView",m_subwin,x1,y1,x2,y2))
       return(false);
@@ -433,7 +456,7 @@ bool CPanelDialog::CreateListView(void)
       return(false);
    m_list_view.Alignment(WND_ALIGN_HEIGHT,0,y1,0,INDENT_BOTTOM);
 //--- fill out with strings
-   for(int i=2;i<=6;i++)
+   for(int i=1;i<=5;i++)
       if(!m_list_view.ItemAdd("Lots="+IntegerToString(i), i))
          return(false);
    m_list_view.SelectByValue(Lots);
@@ -512,6 +535,13 @@ void CPanelDialog::OnClickButton5(void)
    m_label.Text(msg);
    command = 3;
   } 
+  void CPanelDialog::OnClickButton6(void)
+  {
+   m_edit.Text("Button [Reverse Order] clicked.");
+   msg = "Get new instruction: Reverse Order.";
+   m_label.Text(msg);
+   command = 10;
+  }
 //+------------------------------------------------------------------+
 //| Event handler                                                    |
 //+------------------------------------------------------------------+
