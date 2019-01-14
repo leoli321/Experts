@@ -13,7 +13,7 @@
 #include <Controls\CheckGroup.mqh>
 #include <Controls\Label.mqh>
 
-extern int   Lots = 2;
+extern int   Lots = 1;
 extern int   EnableInd = 0;
 extern int   EnableKReverse = 0;
 extern int   EnableDayClose = 0;
