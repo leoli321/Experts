@@ -12,18 +12,8 @@
 #include <Controls\RadioGroup.mqh>
 #include <Controls\CheckGroup.mqh>
 #include <Controls\Label.mqh>
+#include <my1-2-3-global.mqh>
 
-extern int   Lots = 1;
-extern int   EnableInd = 0;
-extern int   EnableKReverse = 0;
-extern int   EnableDayClose = 0;
-int     KTradeMode = -1;
-int     TradeDirection = 0;
-bool    Immediate = false;
-string  msg = "";
-int     command = -1;
-datetime KTradeModeTime = 0;
-string KTradeModeStr[3] = {"No","Buy","Sell"};
    
 //+------------------------------------------------------------------+
 //| defines                                                          |
